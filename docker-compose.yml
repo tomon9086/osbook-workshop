@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  builder:
+    build: builder
+    privileged: true
+    volumes:
+      - ./builder:/app

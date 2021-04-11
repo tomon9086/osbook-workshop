@@ -1,0 +1,24 @@
+#!/bin/bash
+DIR=$(cd $(dirname $0); pwd)
+PWD=$(pwd)
+BUILD_PATH=tmp
+mkdir -p $BUILD_PATH
+
+# build
+qemu-img create -f raw $BUILD_PATH/disk.img 200M
+mkfs.fat -n 'os' -s 2 -f 2 -R 32 -F 32 $BUILD_PATH/disk.img
+mkdir -p $BUILD_PATH/mnt
+mount -o loop $BUILD_PATH/disk.img $BUILD_PATH/mnt
+mkdir -p $BUILD_PATH/mnt/EFI/BOOT
+cp $PWD/BOOTX64.efi $BUILD_PATH/mnt/EFI/BOOT/BOOTX64.efi
+umount $BUILD_PATH/mnt
+
+# run
+qemu-system-x86_64 \
+  -nographic \
+  -drive if=pflash,file=$DIR/OVMF_CODE.fd \
+  -drive if=pflash,file=$DIR/OVMF_VARS.fd \
+  -hda $BUILD_PATH/disk.img
+
+# clean up
+rm -rf $BUILD_PATH
