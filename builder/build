@@ -2,6 +2,8 @@
 DIR=$(cd $(dirname $0); pwd)
 PWD=$(pwd)
 BUILD_PATH=tmp
+EFI_FILE_PATH=$1
+
 mkdir -p $BUILD_PATH
 
 # build
@@ -10,7 +12,7 @@ mkfs.fat -n 'os' -s 2 -f 2 -R 32 -F 32 $BUILD_PATH/disk.img
 mkdir -p $BUILD_PATH/mnt
 mount -o loop $BUILD_PATH/disk.img $BUILD_PATH/mnt
 mkdir -p $BUILD_PATH/mnt/EFI/BOOT
-cp $PWD/BOOTX64.efi $BUILD_PATH/mnt/EFI/BOOT/BOOTX64.efi
+cp $EFI_FILE_PATH $BUILD_PATH/mnt/EFI/BOOT/BOOTX64.efi
 umount $BUILD_PATH/mnt
 
 # run
