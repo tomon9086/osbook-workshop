@@ -43,7 +43,6 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder "ansible", "/ansible"
   config.vm.synced_folder "../src", "/app"
 
   # Provider-specific configuration so you can fine-tune various
@@ -66,15 +65,13 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt update
-    apt install -y xserver-xorg ansible
+    apt install -y xserver-xorg
   SHELL
-
-  config.vm.provision "file", source: "startup.sh", destination: "/etc/profile.d/startup.sh"
   
-  # config.vm.provision "ansible_local" do |ansible|
-  #   ansible.playbook = "ansible_provision.yml"
-  #   ansible.inventory_path = "ansible_inventory"
-  # end
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "ansible/playbook.yml"
+    ansible.inventory_path = "ansible/inventory"
+  end
   
   config.ssh.forward_x11 = true
 end
