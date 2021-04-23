@@ -1,0 +1,13 @@
+---
+- hosts: default
+  tasks:
+    - name: install dependencies
+      become: yes
+      apt:
+        name:
+          - qemu-utils
+          - qemu-system-x86
+          - dosfstools
+          - clang
+          - build-essential
+          - lld
