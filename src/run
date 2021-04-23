@@ -8,7 +8,7 @@ mkdir -p $BUILD_PATH
 
 # build
 qemu-img create -f raw $BUILD_PATH/disk.img 200M
-mkfs.fat -n 'os' -s 2 -f 2 -R 32 -F 32 $BUILD_PATH/disk.img
+mkfs.fat -n 'OS' -s 2 -f 2 -R 32 -F 32 $BUILD_PATH/disk.img
 mkdir -p $BUILD_PATH/mnt
 sudo mount -o loop $BUILD_PATH/disk.img $BUILD_PATH/mnt
 sudo mkdir -p $BUILD_PATH/mnt/EFI/BOOT
