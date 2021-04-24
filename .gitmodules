@@ -1,0 +1,3 @@
+[submodule "include/edk2"]
+	path = include/edk2
+	url = git@github.com:tianocore/edk2.git
