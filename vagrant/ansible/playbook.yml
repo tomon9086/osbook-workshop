@@ -11,3 +11,15 @@
           - clang
           - build-essential
           - lld
+          - uuid-dev
+          - llvm
+          - nasm
+    # install EDK2
+    - name: clone EDK2
+      git:
+        repo: "https://github.com/tianocore/edk2.git"
+        dest: "{{ ansible_env.HOME }}/edk2"
+        version: "38c8be123aced4cc8ad5c7e0da9121a181b94251"
+    - name: build EDK2
+      make:
+        chdir: "{{ ansible_env.HOME }}/edk2/BaseTools/Source/C"
