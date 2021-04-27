@@ -19,7 +19,8 @@ sudo umount $BUILD_PATH/mnt
 qemu-system-x86_64 \
   -drive if=pflash,format=raw,file=$DIR/OVMF_CODE.fd \
   -drive if=pflash,format=raw,file=$DIR/OVMF_VARS.fd \
-  -drive if=ide,format=raw,file=$BUILD_PATH/disk.img
+  -drive if=ide,format=raw,file=$BUILD_PATH/disk.img \
+  # -monitor stdio \
 
 # clean up
 rm -rf $BUILD_PATH
