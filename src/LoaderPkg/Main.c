@@ -1,5 +1,6 @@
 #include <Guid/FileInfo.h>
 #include <Library/MemoryAllocationLib.h>
+#include <Library/PrintLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
 #include <Protocol/LoadedImage.h>
