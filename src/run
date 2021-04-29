@@ -12,6 +12,7 @@ mkfs.fat -n 'OS' -s 2 -f 2 -R 32 -F 32 $BUILD_PATH/disk.img
 mkdir -p $BUILD_PATH/mnt
 sudo mount -o loop $BUILD_PATH/disk.img $BUILD_PATH/mnt
 sudo mkdir -p $BUILD_PATH/mnt/EFI/BOOT
+sudo cp $DIR/kernel/kernel.elf $BUILD_PATH/mnt/kernel.elf
 sudo cp $EFI_FILE_PATH $BUILD_PATH/mnt/EFI/BOOT/BOOTX64.efi
 sudo umount $BUILD_PATH/mnt
 
@@ -20,7 +21,7 @@ qemu-system-x86_64 \
   -drive if=pflash,format=raw,file=$DIR/OVMF_CODE.fd \
   -drive if=pflash,format=raw,file=$DIR/OVMF_VARS.fd \
   -drive if=ide,format=raw,file=$BUILD_PATH/disk.img \
-  # -monitor stdio \
+  -monitor stdio \
 
 # clean up
 rm -rf $BUILD_PATH
