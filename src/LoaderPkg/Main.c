@@ -6,6 +6,8 @@
 #include <Protocol/LoadedImage.h>
 #include <Uefi.h>
 
+#include "../kernel/frame_buffer_config.hpp"
+
 struct MemoryMap {
   UINTN bufferSize;
   VOID *buffer;
@@ -137,9 +139,24 @@ EFI_STATUS CallKernel(EFI_HANDLE image_handle, CHAR16 *path) {
     return status;
   }
 
-  typedef void EntryPointType(UINT64, UINT64);
+  struct FrameBufferConfig config = {(UINT8 *)gop->Mode->FrameBufferBase,
+                                     gop->Mode->Info->PixelsPerScanLine,
+                                     gop->Mode->Info->HorizontalResolution,
+                                     gop->Mode->Info->VerticalResolution,
+                                     0};
+  switch (gop->Mode->Info->PixelFormat) {
+    case PixelRedGreenBlueReserved8BitPerColor:
+      config.pixel_format = kPixelRGBReserved8BitPerColor;
+      break;
+    case PixelBlueGreenRedReserved8BitPerColor:
+      config.pixel_format = kPixelBGRReserved8BitPerColor;
+      break;
+    default:
+      return EFI_UNSUPPORTED;
+  }
+  typedef void EntryPointType(const struct FrameBufferConfig *);
   EntryPointType *entry_point = (EntryPointType *)entry_addr;
-  entry_point(gop->Mode->FrameBufferBase, gop->Mode->FrameBufferSize);
+  entry_point(&config);
 
   return EFI_SUCCESS;
 }
