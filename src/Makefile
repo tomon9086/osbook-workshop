@@ -1,15 +1,19 @@
 SHELL=/bin/bash
 
 all:;
-	make build
+	make build_kernel
+	make build_efi
 	make start
+
+build_kernel:;
+	cd $(CURDIR)/kernel && make
 
 setup:;
 	cd $(HOME)/edk2 && source edksetup.sh
 	cat Conf/target.txt > $(HOME)/edk2/Conf/target.txt
 	ln -s $(CURDIR)/LoaderPkg $(HOME)/edk2/
 
-build:;
+build_efi:;
 	cd $(HOME)/edk2 && source edksetup.sh && cd $(CURDIR) && build
 
 start:;
