@@ -158,13 +158,13 @@ EFI_STATUS EFIAPI UefiMain(EFI_HANDLE image_handle,
 
   status = GetMemoryMap(&memMap);
   if (EFI_ERROR(status)) {
-    Print(L"%r\n", status);
+    Print(L"GetMemoryMap - Error: %r\n", status);
     Halt();
   }
 
   status = CallKernel(image_handle, L"\\kernel.elf");
   if (EFI_ERROR(status)) {
-    Print(L"%r\n", status);
+    Print(L"CallKernel - Error: %r\n", status);
     Halt();
   }
 
