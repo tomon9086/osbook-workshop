@@ -13,10 +13,12 @@ CLFLAGS ?= \
 
 LDFLAGS ?= -L$(HOME)/library/x86_64-elf/lib
 
+.PHONY: all
 all:;
 	make compile
 	make link
 
+.PHONY: compile
 compile:;
 	clang++ \
 		$(CLFLAGS) \
@@ -32,6 +34,7 @@ compile:;
 		-c \
 		main.cpp
 
+.PHONY: link
 link:;
 	ld.lld \
 		$(LDFLAGS) \
@@ -43,5 +46,6 @@ link:;
 		-o kernel.elf \
 		main.o
 
+.PHONY: clean
 clean:;
 	rm -f *.o *.elf
