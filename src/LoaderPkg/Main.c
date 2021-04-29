@@ -15,6 +15,10 @@ struct MemoryMap {
   UINT32 descriptorVersion;
 };
 
+void Halt(void) {
+  while (1) __asm__("hlt");
+}
+
 EFI_STATUS GetMemoryMap(struct MemoryMap *map) {
   if (map->buffer == NULL) {
     return EFI_BUFFER_TOO_SMALL;
@@ -126,6 +130,6 @@ EFI_STATUS EFIAPI UefiMain(EFI_HANDLE image_handle,
   CallKernel(image_handle, L"\\kernel.elf");
 
   Print(L"Done!\n");
-  while (1) continue;
+  Halt();
   return EFI_SUCCESS;
 }
