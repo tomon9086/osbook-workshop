@@ -1,4 +1,5 @@
 #include <Guid/FileInfo.h>
+#include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
 #include <Protocol/LoadedImage.h>
@@ -25,6 +26,28 @@ EFI_STATUS GetMemoryMap(struct MemoryMap *map) {
                              &map->mapKey,
                              &map->descriptorSize,
                              &map->descriptorVersion);
+}
+
+EFI_STATUS OpenGOP(EFI_HANDLE image_handle,
+                   EFI_GRAPHICS_OUTPUT_PROTOCOL **gop) {
+  UINTN num_gop_handles = 0;
+  EFI_HANDLE *gop_handles = NULL;
+  (gBS->LocateHandleBuffer)(ByProtocol,
+                            &gEfiGraphicsOutputProtocolGuid,
+                            NULL,
+                            &num_gop_handles,
+                            &gop_handles);
+
+  (gBS->OpenProtocol)(gop_handles[0],
+                      &gEfiGraphicsOutputProtocolGuid,
+                      (VOID **)gop,
+                      image_handle,
+                      NULL,
+                      EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+
+  FreePool(gop_handles);
+
+  return EFI_SUCCESS;
 }
 
 EFI_STATUS OpenRootDir(EFI_HANDLE image_handle, EFI_FILE_PROTOCOL **root) {
@@ -96,6 +119,13 @@ EFI_STATUS EFIAPI UefiMain(EFI_HANDLE image_handle,
   };
 
   GetMemoryMap(&memMap);
+
+  EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
+  OpenGOP(image_handle, &gop);
+  UINT8 *frame_buffer = (UINT8 *)gop->Mode->FrameBufferBase;
+  for (UINTN i = 0; i < gop->Mode->FrameBufferSize; ++i) {
+    frame_buffer[i] = 255;
+  }
 
   CallKernel(image_handle, L"\\kernel.elf");
 
