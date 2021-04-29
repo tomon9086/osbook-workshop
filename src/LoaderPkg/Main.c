@@ -98,9 +98,12 @@ EFI_STATUS CallKernel(EFI_HANDLE image_handle, CHAR16 *path) {
 
   UINT64 entry_addr = *(UINT64 *)(base_addr + 24);
 
-  typedef void EntryPointType(void);
+  EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
+  OpenGOP(image_handle, &gop);
+
+  typedef void EntryPointType(UINT64, UINT64);
   EntryPointType *entry_point = (EntryPointType *)entry_addr;
-  entry_point();
+  entry_point(gop->Mode->FrameBufferBase, gop->Mode->FrameBufferSize);
 
   return EFI_SUCCESS;
 }
@@ -119,13 +122,6 @@ EFI_STATUS EFIAPI UefiMain(EFI_HANDLE image_handle,
   };
 
   GetMemoryMap(&memMap);
-
-  EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
-  OpenGOP(image_handle, &gop);
-  UINT8 *frame_buffer = (UINT8 *)gop->Mode->FrameBufferBase;
-  for (UINTN i = 0; i < gop->Mode->FrameBufferSize; ++i) {
-    frame_buffer[i] = 255;
-  }
 
   CallKernel(image_handle, L"\\kernel.elf");
 

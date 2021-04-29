@@ -23,3 +23,14 @@
     - name: build EDK2
       make:
         chdir: "{{ ansible_env.HOME }}/edk2/BaseTools/Source/C"
+    # install standard libraries
+    - name: create directory if not exists
+      file:
+        path: "{{ ansible_env.HOME }}/library"
+        state: directory
+        mode: 0775
+    - name: install standard libraries
+      unarchive:
+        src: "https://github.com/uchan-nos/mikanos-build/releases/download/v1.0/x86_64-elf.tar.gz"
+        dest: "{{ ansible_env.HOME }}/library"
+        remote_src: yes
