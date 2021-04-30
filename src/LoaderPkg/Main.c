@@ -6,7 +6,7 @@
 #include <Protocol/LoadedImage.h>
 #include <Uefi.h>
 
-#include "../kernel/frame_buffer_config.hpp"
+#include "frame_buffer_config.hpp"
 
 struct MemoryMap {
   UINTN bufferSize;
