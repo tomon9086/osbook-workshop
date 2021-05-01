@@ -1,6 +1,5 @@
 #include <cstddef>
 #include <cstdint>
-#include <new>
 
 #include "frame_buffer_config.hpp"
 #include "pixel_writer.hpp"

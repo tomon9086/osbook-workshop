@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <new>
 
 void operator delete(void* obj) {}
 
