@@ -1,4 +1,5 @@
 #include <Guid/FileInfo.h>
+#include <Library/BaseMemoryLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PrintLib.h>
 #include <Library/UefiBootServicesTableLib.h>
@@ -6,6 +7,8 @@
 #include <Protocol/LoadedImage.h>
 #include <Uefi.h>
 
+#include "elf64.h"
+#include "elf_common.h"
 #include "frame_buffer_config.hpp"
 
 struct MemoryMap {
@@ -91,6 +94,30 @@ EFI_STATUS OpenRootDir(EFI_HANDLE image_handle, EFI_FILE_PROTOCOL **root) {
   return fs->OpenVolume(fs, root);
 }
 
+void CalcLoadAddressRange(Elf64_Ehdr *ehdr, UINT64 *first, UINT64 *last) {
+  Elf64_Phdr *phdr = (Elf64_Phdr *)((UINT64)ehdr + ehdr->e_phoff);
+  *first = MAX_UINT64;
+  *last = 0;
+  for (Elf64_Half i = 0; i < ehdr->e_phnum; ++i) {
+    if (phdr[i].p_type != PT_LOAD) continue;
+    *first = MIN(*first, phdr[i].p_vaddr);
+    *last = MAX(*last, phdr[i].p_vaddr + phdr[i].p_memsz);
+  }
+}
+
+void CopyLoadSegments(Elf64_Ehdr *ehdr) {
+  Elf64_Phdr *phdr = (Elf64_Phdr *)((UINT64)ehdr + ehdr->e_phoff);
+  for (Elf64_Half i = 0; i < ehdr->e_phnum; ++i) {
+    if (phdr[i].p_type != PT_LOAD) continue;
+
+    UINT64 segm_in_file = (UINT64)ehdr + phdr[i].p_offset;
+    CopyMem((VOID *)phdr[i].p_vaddr, (VOID *)segm_in_file, phdr[i].p_filesz);
+
+    UINTN remain_bytes = phdr[i].p_memsz - phdr[i].p_filesz;
+    SetMem((VOID *)(phdr[i].p_vaddr + phdr[i].p_filesz), remain_bytes, 0);
+  }
+}
+
 EFI_STATUS CallKernel(EFI_HANDLE image_handle, CHAR16 *path) {
   EFI_STATUS status;
   EFI_FILE_PROTOCOL *root_dir;
@@ -120,18 +147,35 @@ EFI_STATUS CallKernel(EFI_HANDLE image_handle, CHAR16 *path) {
 
   EFI_FILE_INFO *file_info = (EFI_FILE_INFO *)file_info_buffer;
   UINTN file_size = file_info->FileSize;
-  EFI_PHYSICAL_ADDRESS base_addr = 0x100000;
-  status = (gBS->AllocatePages)(
-      AllocateAddress, EfiLoaderData, (file_size + 0xfff) / 0x1000, &base_addr);
+
+  VOID *kernel_buffer;
+  status = (gBS->AllocatePool)(EfiLoaderData, file_size, &kernel_buffer);
   if (EFI_ERROR(status)) {
     return status;
   }
-  status = file->Read(file, &file_size, (VOID *)base_addr);
+  status = file->Read(file, &file_size, kernel_buffer);
   if (EFI_ERROR(status)) {
     return status;
   }
 
-  UINT64 entry_addr = *(UINT64 *)(base_addr + 24);
+  Elf64_Ehdr *kernel_ehdr = (Elf64_Ehdr *)kernel_buffer;
+  UINT64 kernel_first_addr, kernel_last_addr;
+  CalcLoadAddressRange(kernel_ehdr, &kernel_first_addr, &kernel_last_addr);
+
+  UINTN num_pages = (kernel_last_addr - kernel_first_addr + 0xfff) / 0x1000;
+  status = (gBS->AllocatePages)(
+      AllocateAddress, EfiLoaderData, num_pages, &kernel_first_addr);
+  if (EFI_ERROR(status)) {
+    return status;
+  }
+
+  CopyLoadSegments(kernel_ehdr);
+  status = (gBS->FreePool)(kernel_buffer);
+  if (EFI_ERROR(status)) {
+    return status;
+  }
+
+  UINT64 entry_addr = *(UINT64 *)(kernel_first_addr + 24);
 
   EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
   status = OpenGOP(image_handle, &gop);
