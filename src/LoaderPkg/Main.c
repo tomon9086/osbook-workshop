@@ -223,6 +223,8 @@ EFI_STATUS EFIAPI UefiMain(EFI_HANDLE image_handle,
     Halt();
   }
 
+  // ToDo: ExitBootService
+
   status = CallKernel(image_handle, L"\\kernel.elf");
   if (EFI_ERROR(status)) {
     Print(L"CallKernel - Error: %r\n", status);
