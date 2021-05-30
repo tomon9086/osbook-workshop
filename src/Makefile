@@ -8,7 +8,7 @@ all:;
 
 .PHONY: build_kernel
 build_kernel:;
-	cd $(CURDIR)/kernel && make
+	cd $(CURDIR)/kernel && cargo build
 
 .PHONY: setup
 setup:;

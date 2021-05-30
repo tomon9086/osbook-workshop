@@ -14,6 +14,20 @@
           - uuid-dev
           - llvm
           - nasm
+    # install rust
+    - name: download rustup
+      get_url:
+        url: https://sh.rustup.rs
+        dest: "{{ ansible_env.HOME }}/rustup.sh"
+        mode: "0755"
+    - name: install rustup
+      shell: "{{ ansible_env.HOME }}/rustup.sh -y"
+      tags:
+        - skip_ansible_lint
+    - name: remove installer
+      shell: "rm -f {{ ansible_env.HOME }}/rustup.sh"
+      tags:
+        - skip_ansible_lint
     # install EDK2
     - name: clone EDK2
       git:
