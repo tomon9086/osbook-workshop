@@ -4,8 +4,8 @@
 
 mod frame_buffer;
 
+use core::panic::PanicInfo;
 use frame_buffer::*;
-use panic_halt;
 
 fn halt() -> ! {
   loop {
@@ -13,6 +13,11 @@ fn halt() -> ! {
       asm!("hlt");
     }
   }
+}
+
+#[panic_handler]
+fn panic_handler(_: &PanicInfo) -> ! {
+  halt()
 }
 
 #[no_mangle]

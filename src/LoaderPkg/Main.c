@@ -9,13 +9,13 @@
 
 #include "elf64.h"
 #include "elf_common.h"
-// #include "frame_buffer_config.hpp"
+#include "frame_buffer_config.hpp"
 
 struct MemoryMap {
   UINTN bufferSize;
   VOID *buffer;
   UINTN memoryMapSize;
-  // EFI_MEMORY_DESCRIPTOR *memoryMap;
+  EFI_MEMORY_DESCRIPTOR *memoryMap;
   UINTN mapKey;
   UINTN descriptorSize;
   UINT32 descriptorVersion;
@@ -183,26 +183,24 @@ EFI_STATUS CallKernel(EFI_HANDLE image_handle, CHAR16 *path) {
     return status;
   }
 
-  // struct FrameBufferConfig config = {(UINT8 *)gop->Mode->FrameBufferBase,
-  //                                    gop->Mode->Info->PixelsPerScanLine,
-  //                                    gop->Mode->Info->HorizontalResolution,
-  //                                    gop->Mode->Info->VerticalResolution,
-  //                                    0};
-  // switch (gop->Mode->Info->PixelFormat) {
-  //   case PixelRedGreenBlueReserved8BitPerColor:
-  //     config.pixel_format = kPixelRGBReserved8BitPerColor;
-  //     break;
-  //   case PixelBlueGreenRedReserved8BitPerColor:
-  //     config.pixel_format = kPixelBGRReserved8BitPerColor;
-  //     break;
-  //   default:
-  //     return EFI_UNSUPPORTED;
-  // }
-  typedef void EntryPointType();
-  // typedef void EntryPointType(const struct FrameBufferConfig *);
+  struct FrameBufferConfig config = {(UINT8 *)gop->Mode->FrameBufferBase,
+                                     gop->Mode->Info->PixelsPerScanLine,
+                                     gop->Mode->Info->HorizontalResolution,
+                                     gop->Mode->Info->VerticalResolution,
+                                     0};
+  switch (gop->Mode->Info->PixelFormat) {
+    case PixelRedGreenBlueReserved8BitPerColor:
+      config.pixel_format = kPixelRGBReserved8BitPerColor;
+      break;
+    case PixelBlueGreenRedReserved8BitPerColor:
+      config.pixel_format = kPixelBGRReserved8BitPerColor;
+      break;
+    default:
+      return EFI_UNSUPPORTED;
+  }
+  typedef void EntryPointType(const struct FrameBufferConfig *);
   EntryPointType *entry_point = (EntryPointType *)entry_addr;
-  entry_point();
-  // entry_point(&config);
+  entry_point(&config);
 
   return EFI_SUCCESS;
 }
