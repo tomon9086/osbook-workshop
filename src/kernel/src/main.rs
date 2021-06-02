@@ -3,9 +3,13 @@
 #![feature(asm)]
 
 mod frame_buffer;
+mod pixel_color;
+mod pixel_writer;
 
 use core::panic::PanicInfo;
 use frame_buffer::*;
+use pixel_color::*;
+use pixel_writer::*;
 
 fn halt() -> ! {
   loop {
@@ -22,19 +26,24 @@ fn panic_handler(_: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn KernelMain(frame_buffer_config: &mut FrameBufferConfig) {
+  let pixel_writer: &dyn PixelWriter;
+
+  match &frame_buffer_config.pixel_format {
+    PixelFormat::KPixelRGBReserved8BitPerColor => {
+      pixel_writer = &RGBReserved8BitPerColorPixelWriter {}
+    }
+    PixelFormat::KPixelBGRReserved8BitPerColor => {
+      pixel_writer = &BGRReserved8BitPerColorPixelWriter {}
+    }
+  }
+
   let w = 300;
   let h = 200;
 
   for x in 0..w {
     for y in 0..h {
-      unsafe {
-        let p = frame_buffer_config
-          .frame_buffer
-          .add(4 * (frame_buffer_config.pixels_per_scan_line * y + x) as usize);
-        *p.add(0) = (255 * x / w) as u8;
-        *p.add(1) = 180;
-        *p.add(2) = (255 * y / h) as u8;
-      }
+      let color = PixelColor::new((255 * x / w) as u8, 180, (255 * y / h) as u8);
+      (*pixel_writer).write(frame_buffer_config, 100 + x, 100 + y, &color);
     }
   }
 
