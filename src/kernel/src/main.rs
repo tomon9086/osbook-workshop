@@ -3,11 +3,13 @@
 #![feature(asm)]
 
 mod frame_buffer;
+mod font;
 mod pixel_color;
 mod pixel_writer;
 
 use core::panic::PanicInfo;
 use frame_buffer::*;
+use font::*;
 use pixel_color::*;
 use pixel_writer::*;
 
@@ -29,6 +31,20 @@ fn clear_frame(frame_buffer_config: &mut FrameBufferConfig, pixel_writer: &dyn P
     for y in 0..frame_buffer_config.vertical_resolution {
       let color = PixelColor::new(255, 255, 255);
       (*pixel_writer).write(frame_buffer_config, x, y, &color);
+    }
+  }
+}
+
+fn write_ascii(frame_buffer_config: &mut FrameBufferConfig, pixel_writer: &dyn PixelWriter, x: u32, y: u32, c: char, color: PixelColor) {
+  let w = 8;
+  let h = 16;
+
+  for px in 0..w {
+    for py in 0..h {
+      let font = get_font(c).get_pixel();
+      if (font[py] << px) & 0x80 != 0 {
+        (*pixel_writer).write(frame_buffer_config, x + px as u32, y + py as u32, &color);
+      }
     }
   }
 }
@@ -55,6 +71,10 @@ pub extern "C" fn KernelMain(frame_buffer_config: &mut FrameBufferConfig) {
       let color = PixelColor::new((255 * x / w) as u8, 180, (255 * y / h) as u8);
       (*pixel_writer).write(frame_buffer_config, 100 + x, 100 + y, &color);
     }
+  }
+
+  for ascii in 0..0xff {
+    write_ascii(frame_buffer_config, pixel_writer, 50 + (ascii * 8) % 300, 50 + 16 * ((ascii * 8) / 300) as u32, ascii as u8 as char, PixelColor::new(0, 0, 0));
   }
 
   halt();
