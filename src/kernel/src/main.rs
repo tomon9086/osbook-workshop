@@ -73,7 +73,7 @@ pub extern "C" fn KernelMain(frame_buffer_config: &mut FrameBufferConfig) {
     }
   }
 
-  for ascii in 0..0xff {
+  for ascii in 0..=0xff {
     write_ascii(frame_buffer_config, pixel_writer, 50 + (ascii * 8) % 300, 50 + 16 * ((ascii * 8) / 300) as u32, ascii as u8 as char, PixelColor::new(0, 0, 0));
   }
 
