@@ -2,17 +2,13 @@
 #![no_main]
 #![feature(asm)]
 
-mod frame_buffer;
+mod graphics;
 mod font;
-mod pixel_color;
-mod pixel_writer;
 mod print;
 
 use core::panic::PanicInfo;
-use frame_buffer::*;
+use graphics::*;
 use font::*;
-use pixel_color::*;
-use pixel_writer::*;
 use print::*;
 
 fn halt() -> ! {
