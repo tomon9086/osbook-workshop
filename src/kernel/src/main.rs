@@ -2,14 +2,12 @@
 #![no_main]
 #![feature(asm)]
 
+mod console;
 mod graphics;
-mod font;
-mod print;
 
 use core::panic::PanicInfo;
+use console::*;
 use graphics::*;
-use font::*;
-use print::*;
 
 fn halt() -> ! {
   loop {
@@ -45,6 +43,8 @@ pub extern "C" fn KernelMain(frame_buffer_config: &mut FrameBufferConfig) {
     }
   }
 
+  let mut console = Console::new(pixel_writer);
+
   (*pixel_writer).clear_frame(&PixelColor::new(255, 255, 255));
 
   let w = 300;
@@ -56,11 +56,7 @@ pub extern "C" fn KernelMain(frame_buffer_config: &mut FrameBufferConfig) {
     }
   }
 
-  write_string(pixel_writer, 50, 30, "ABC abc ｱｲｳ ±²³ _!?", &PixelColor::new(0, 0, 0));
-
-  for ascii in 0..=0xff {
-    write_ascii(pixel_writer, 50 + (ascii * 8) % 300, 50 + 16 * ((ascii * 8) / 300) as u32, ascii as u8 as char, &PixelColor::new(0, 0, 0));
-  }
+  console.put_string("ABC abc ｱｲｳ ±²³ _!?");
 
   halt();
 }
