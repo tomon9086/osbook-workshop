@@ -56,7 +56,9 @@ pub extern "C" fn KernelMain(frame_buffer_config: &mut FrameBufferConfig) {
     }
   }
 
-  console.put_string("ABC abc ｱｲｳ ±²³ _!?");
+  console.put_string("ABC abc ｱｲｳ ±²³ _!?\n");
+  console.put_string("________10________20________30________40________50________60________70________80________90_______100\n");
+  console.put_string("ÆÌÞÆÌÞÆÌÞÆÌÞÆÌÞÆÌÞÆÌÞÆÌÞÆÌÞÆÌÞ...\n");
 
   halt();
 }
