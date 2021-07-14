@@ -21,22 +21,26 @@ impl Console<'_> {
   }
 
   pub fn put_string(&mut self, s: &str) {
-    let char_width = 8;
-    let char_height = 16;
-    
     for c in s.chars() {
-      let x = self.cursor_col * char_width;
-      let y = self.cursor_row * char_height;
-
       if c == '\n' {
         self.newline();
       } else if self.cursor_col >= self.cols {
-        write_ascii(self.pixel_writer, x, y, 0x02 as char, &PixelColor::new(0, 0, 0));
+        self.put_char(0x02 as char);
       } else {
-        write_ascii(self.pixel_writer, x, y, c, &PixelColor::new(0, 0, 0));
+        self.put_char(c);
         self.cursor_col += 1;
       }
     }
+  }
+
+  fn put_char(&mut self, c: char) {
+    let char_width = 8;
+    let char_height = 16;
+
+    let x = self.cursor_col * char_width;
+    let y = self.cursor_row * char_height;
+
+    write_ascii(self.pixel_writer, x, y, c, &PixelColor::new(0, 0, 0));
   }
 
   fn newline(&mut self) {
